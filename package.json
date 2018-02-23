@@ -9,7 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "binstring": "^0.2.1",
+    "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "express-fileupload": "^0.4.0",
     "pug": "^2.0.0-rc.4"
   }
 }
