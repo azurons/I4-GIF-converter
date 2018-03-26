@@ -5,6 +5,9 @@ const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const header = 44;
+const splitChar = ';';
+const splitFileName = '010100110101010001000001010100100101010000111011'; // Binaire du mode "START;"
+const splitBin = '01000101010011100100010000111011'; // Binaire du mot "END;"
 
 app.use(fileUpload());
 app.use(cors());
@@ -16,82 +19,173 @@ app.get("/", (req, res) => {
 
 
 app.post('/hideText', function (req, res) {
-   /* if(!req.files || !req.body.message){
+   /* if(!req.files || !req.files.wav || !req.body.message){
         return res.send({error: "Please provite a valid music and message"});
     }*/
 
     let sound = req.files.wav;
     //let message = res.body.message;
-    let message = "test";
-    let messageBinary = "";
+    let message = 'Culpa incididunt' + splitChar;
+    let messageBinary = '';
     for(let i = 0 ; i < message.length; i++){
-        rawBinary = message[i].charCodeAt(0).toString(2);
-        messageBinary += rawBinary.padStart(8, "0");
+        let rawBinary = message[i].charCodeAt(0).toString(2);
+        messageBinary += rawBinary.padStart(8, '0');
     }
     if(messageBinary.length > sound.data - 45){
         return res.send({error: 'Text is too long or sound is too short'})
     }else{
-        for(let i = 0, len = messageBinary.length; i < len; i++){
-            let strBin = sound.data[header + i].toString(2);
-            console.log('Avant :' + strBin);
-            let tab = strBin.split("");
-            tab[tab.length-1] =  messageBinary[i];
-            let newBin = tab.join('');
-            console.log('Après :' + newBin);
-            sound.data[header + i] = newBin.toString(10);
-        }
-
-        let temporalName = uuidv1();
-        fs.writeFile('./musics/' + temporalName, sound.data, (err)=>{
-            if(err){
-                res.send({error: "Server encounted an error"});
-            }else{
-                console.log(process.cwd());
-                res.download(process.cwd() + '/musics/' + temporalName, sound.name , function(err){
-                    if(err){
-                        console.log('Error : ' + err);
-                    }else{
-                        fs.unlink('./musics/' + temporalName);
-                    }
-                });
-            }
-        })
+        encodeByteInWav(sound, messageBinary, res);
     }   
 
 });
 
 
 app.post('/revealText', function (req,res){
-    if(!req.files){
+    if(!req.files || !req.files.wav){
         return res.send({error: "Please provite a valid music and message"});
     }
 
     let sound = req.files.wav;
-    let binary = "";
-    
-    for(let i = header, len = 81; i < len; i++){
-        //console.log(sound.data[i].toString(2));
-        let strBin = sound.data[i].toString(2);
-        let tab = strBin.split("");
-        binary += tab[tab.length - 1];
-    }
-    console.log(binary);
-
-    let message = "";
+    let binary = decodeByteInWav(sound);
+    let message = '';
     for(let i = 0, len = binary.length; i < len; i+=8){
         let bin = binary.slice(i, i+8);
-        console.log("Travail sur :" +  bin);
         let int = parseInt(bin, 2);
-        console.log("int du parse :" + int );
-        message += String.fromCharCode(int);
-        console.log("lettre:" + message[message.length -1]);
-        console.log("-----------");
+        let char = String.fromCharCode(int);
+        if(char == splitChar){
+            break;
+        }else{
+            message += String.fromCharCode(int);
+        }
+    }
+    res.send({message: message})
+});
+
+app.post('/hideImage' , function (req, res){
+    /* if(!req.files || !req.files.wav || !req.files.image){
+        return res.send({error: "Please provite a valid music and message"});
+    }*/
+    
+    let sound = req.files.wav;
+    //let image = req.files.image;
+    let image = {
+        data: fs.readFileSync('./views/buttonSettings.png'),
+        name: 'buttonSettings.png'
+    };
+    let imageBinary = '';
+    for(let i = 0; i < image.data.length; i++){
+        let rawBinary = image.data[i].toString(2);
+        imageBinary += rawBinary.padStart(8, '0');
     }
 
-    res.send({message: message})
+    imageBinary += splitFileName;
+    
+    for(let i = 0; i < image.name.length; i++){
+        let rawBinary = image.name[i].charCodeAt(0).toString(2);
+        imageBinary += rawBinary.padStart(8, '0');
+    }
+
+    imageBinary += splitBin;
 
 
-
+    if(imageBinary.len > sound.data - 45){
+        return res.send({error: 'Image is too big or sound is too short'});        
+    }else{
+        encodeByteInWav(sound, imageBinary, res);
+    }
 });
+
+app.post('/revealImage', function (req, res){
+    if(!req.files || !req.files.wav){
+        return res.send({error: 'Please provite a valid music and message'});
+    }
+
+    let sound = req.files.wav;
+    let binary = decodeByteInWav(sound);
+    let sliceIndex = binary.indexOf(splitFileName);
+    if(sliceIndex == -1){
+        res.send({error: 'No picture found in this music'});
+    }else{
+        let binImage = binary.slice(0, sliceIndex);
+        let temporalName = uuidv1();
+        let bufferArray = [];
+        for(let i = 0, len = binImage.length; i < len; i+=8){
+            let dec = parseInt(binImage.slice(i, i+8), 2);
+            bufferArray.push(dec);
+        }
+
+        let name = temporalName;
+        let nameIndex = binary.indexOf(splitBin);
+        if(nameIndex != -1){
+            name = '';
+            let rawBinary = binary.slice((sliceIndex + splitFileName.length), nameIndex);
+            console.log("from : " + sliceIndex + sliceIndex.length);
+            console.log("to  : " + nameIndex);
+            console.log('Total lengh : ' + rawBinary.length);
+            for(let i = 0, len = rawBinary.length; i < len; i+=8){
+                let bin = rawBinary.slice(i, i+8);
+                let int = parseInt(bin, 2);
+                let char = String.fromCharCode(int);
+                name += char;
+            }
+            console.log(name);
+        }
+
+        let data = Buffer.from(bufferArray);
+
+        fs.writeFile('./musics/' +  temporalName,data, (err) => {
+            if(err){
+                return res.send({error: 'Server encounted an error'});
+            }else{
+                return res.download(process.cwd() + '/musics/' + temporalName, name,function(err){
+                    if(err){
+                        console.log('Error : ' + err);
+                    }else{
+                        fs.unlink('./musics/' + temporalName, (err) => {
+                            if(err) console.log('Error :' + err);
+                        });
+                    }
+                });
+            }
+        });
+    }
+});
+
+function encodeByteInWav(sound, bin, res){
+    for(let i = 0, len = bin.length; i < len; i++){
+            let strBin = sound.data[header + i].toString(2);
+            let tab = strBin.split('');
+            tab[tab.length-1] =  bin[i];
+            let newBin = tab.join('');
+            sound.data[header + i] = newBin.toString(10);
+        }
+
+        let temporalName = uuidv1();
+        fs.writeFile('./musics/' + temporalName, sound.data, (err)=>{
+            if(err){
+                return res.send({error: 'Server encounted an error'});
+            }else{
+                return res.download(process.cwd() + '/musics/' + temporalName, sound.name , function(err){
+                    if(err){
+                        console.log('Error : ' + err);
+                    }else{
+                        fs.unlink('./musics/' + temporalName, (err) => {
+                            if(err) console.log('Error :' + err);
+                        });
+                    }
+                });
+            }
+        })
+}
+
+function decodeByteInWav(sound){
+    let binary = '';
+    for(let i = header, len = sound.data.length; i < len; i++){
+        let strBin = sound.data[i].toString(2);
+        let tab = strBin.split('');
+        binary += tab[tab.length - 1];
+    }
+    return binary;
+}
 
 app.listen(3000, () => console.log('Chiffrement App listening on port 3000'))

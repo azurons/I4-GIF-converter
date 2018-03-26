@@ -9,4 +9,12 @@ html
         form(action='/revealText', method='POST', encType="multipart/form-data")
             input(type='file' name='wav')
             input(type='submit')
+        p Encode Image.
+        form(action='/hideImage', method='POST', encType="multipart/form-data")
+            input(type='file' name='wav')
+            input(type='submit')
+        p Reveal Image.
+        form(action='/revealImage', method='POST', encType="multipart/form-data")
+            input(type='file' name='wav')
+            input(type='submit')
         
