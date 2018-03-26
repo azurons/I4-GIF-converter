@@ -3,7 +3,6 @@ const app = express();
 const uuidv1 = require('uuid/v1');
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
-const conv = require('binstring');
 const cors = require('cors');
 const header = 44;
 
@@ -24,12 +23,11 @@ app.post('/hideText', function (req, res) {
     let sound = req.files.wav;
     //let message = res.body.message;
     let message = "test";
-    let messageBuffer = conv(message, { in:'binary' });
     let messageBinary = "";
-    for(let i = 0; i < messageBuffer.length; i++){
-        messageBinary += messageBuffer[i].toString(2);
+    for(let i = 0 ; i < message.length; i++){
+        rawBinary = message[i].charCodeAt(0).toString(2);
+        messageBinary += rawBinary.padStart(8, "0");
     }
-    console.log(messageBinary);
     if(messageBinary.length > sound.data - 45){
         return res.send({error: 'Text is too long or sound is too short'})
     }else{
@@ -71,17 +69,23 @@ app.post('/revealText', function (req,res){
     let sound = req.files.wav;
     let binary = "";
     
-    for(let i = header + 1, len = sound.data.length; i < len; i++){
+    for(let i = header, len = 81; i < len; i++){
         //console.log(sound.data[i].toString(2));
         let strBin = sound.data[i].toString(2);
-        binary += strBin[strBin.length - 1];
+        let tab = strBin.split("");
+        binary += tab[tab.length - 1];
     }
+    console.log(binary);
 
     let message = "";
     for(let i = 0, len = binary.length; i < len; i+=8){
         let bin = binary.slice(i, i+8);
+        console.log("Travail sur :" +  bin);
         let int = parseInt(bin, 2);
+        console.log("int du parse :" + int );
         message += String.fromCharCode(int);
+        console.log("lettre:" + message[message.length -1]);
+        console.log("-----------");
     }
 
     res.send({message: message})
