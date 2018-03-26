@@ -1,7 +1,12 @@
 html
     body
         h1 #{title}
-        p Nothing to see here.
+        p encode.
         form(action='/hideText', method='POST', encType="multipart/form-data")
             input(type='file' name='wav')
             input(type='submit')
+        p decode.
+        form(action='/revealText', method='POST', encType="multipart/form-data")
+            input(type='file' name='wav')
+            input(type='submit')
+        
