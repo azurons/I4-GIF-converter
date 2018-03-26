@@ -4,9 +4,11 @@ const uuidv1 = require('uuid/v1');
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const conv = require('binstring');
+const cors = require('cors');
 const header = 44;
 
 app.use(fileUpload());
+app.use(cors());
 app.set("view engine", "pug")
 
 app.get("/", (req, res) => {
@@ -32,9 +34,13 @@ app.post('/hideText', function (req, res) {
         return res.send({error: 'Text is too long or sound is too short'})
     }else{
         for(let i = 0, len = messageBinary.length; i < len; i++){
-            let strBin = sound.data[header+i].toString(2);
-            strBin[strBin.length - 1] = messageBinary[i]
-            sound.data[header+i] = strBin.toString(10);
+            let strBin = sound.data[header + i].toString(2);
+            console.log('Avant :' + strBin);
+            let tab = strBin.split("");
+            tab[tab.length-1] =  messageBinary[i];
+            let newBin = tab.join('');
+            console.log('Après :' + newBin);
+            sound.data[header + i] = newBin.toString(10);
         }
 
         let temporalName = uuidv1();
