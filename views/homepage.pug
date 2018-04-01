@@ -1,20 +1,28 @@
+<!DOCTYPE html>
 html
+    head
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        meta(charset="utf-8")
+        link(rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.min.css")
+        script(defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js")
     body
-        h1 #{title}
-        p encode.
-        form(action='/hideText', method='POST', encType="multipart/form-data")
-            input(type='file' name='wav')
-            input(type='submit')
-        p decode.
-        form(action='/revealText', method='POST', encType="multipart/form-data")
-            input(type='file' name='wav')
-            input(type='submit')
-        p Encode Image.
-        form(action='/hideImage', method='POST', encType="multipart/form-data")
-            input(type='file' name='wav')
-            input(type='submit')
-        p Reveal Image.
-        form(action='/revealImage', method='POST', encType="multipart/form-data")
-            input(type='file' name='wav')
-            input(type='submit')
-        
+        section(class="section")
+            div(class="container")
+                h1(class="title") #{title}
+                p encode.
+                form(action='/hideText', method='POST', encType="multipart/form-data")
+                    input(type='file' name='wav')
+                    input(type='submit')
+                p decode.
+                form(action='/revealText', method='POST', encType="multipart/form-data")
+                    input(type='file' name='wav')
+                    input(type='submit')
+                p Encode Image.
+                form(action='/hideImage', method='POST', encType="multipart/form-data")
+                    input(type='file' name='wav')
+                    input(type='submit')
+                p Reveal Image.
+                form(action='/revealImage', method='POST', encType="multipart/form-data")
+                    input(type='file' name='wav')
+                    input(type='submit')
+            
