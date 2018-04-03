@@ -21,11 +21,11 @@ html
                             form(action='/hideText', method='POST', encType="multipart/form-data")
                                 div(class="form-group")
                                     label(for="message") Message
-                                    input(class="form-control" type="text" id="message" name="message" placeholder="Your secret message here !")
+                                    input(required class="form-control" type="text" id="message" name="message" placeholder="Your secret message here !")
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file 
                                     br
-                                    input(type='file' id="wav" name='wav')
+                                    input(required type='file' id="wav" name='wav')
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
                         div.mt-3
                             h3 Decode a message from a .wav file 
@@ -33,7 +33,7 @@ html
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
-                                    input(type='file' name='wav')
+                                    input(required type='file' name='wav')
                                 button(type='submit' class="btn btn-primary mb-2") Confirm                            
                     div(class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab")
                         div.mt-3
@@ -42,11 +42,11 @@ html
                                 div(class="form-group") 
                                     label(for="wav") Your image file
                                     br
-                                    input(type='file' name='image')
+                                    input(required type='file' name='image')
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
-                                    input(type='file' name='wav')    
+                                    input(required type='file' name='wav')    
                                 button(type='submit' class="btn btn-primary mb-2") Confirm     
                         div.mt-3                        
                             h3 Decode a message from a .wav file
@@ -54,5 +54,5 @@ html
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
-                                    input(type='file' name='wav')
+                                    input(required type='file' name='wav')
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
