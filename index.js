@@ -11,26 +11,27 @@ const splitBin = '01000101010011100100010000111011'; // Binaire du mot "END;"
 
 app.use(fileUpload());
 app.use(cors());
-app.set("view engine", "pug")
+app.set("view engine", "pug");
 
+//Lorsqu'on tape sur localhost:3000/ on renvoit la page d'accueil
 app.get("/", (req, res) => {
-    res.render("homepage", {title: "test"});
+    res.render("homepage");
 });
 
-
+//Fonction pour cacher le text dans l'image
 app.post('/hideText', function (req, res) {
-    if(!req.files || !req.files.wav || !req.body.message){
+    if(!req.files || !req.files.wav || !req.body.message){//au cas où le formulaire soit incomplet
         return res.send({error: "Please provite a valid music and message"});
     }
 
     let sound = req.files.wav;
     let message = req.body.message + splitChar;
     let messageBinary = '';
-    for(let i = 0 ; i < message.length; i++){
+    for(let i = 0 ; i < message.length; i++){//on convertit le message en binaire avec un padding de 0
         let rawBinary = message[i].charCodeAt(0).toString(2);
         messageBinary += rawBinary.padStart(8, '0');
     }
-    if(messageBinary.length > sound.data - 45){
+    if(messageBinary.length > sound.data - 45){//On check si le message n'est pas trop long
         return res.send({error: 'Text is too long or sound is too short'})
     }else{
         encodeByteInWav(sound, messageBinary, res);
@@ -47,14 +48,14 @@ app.post('/revealText', function (req,res){
     let sound = req.files.wav;
     let binary = decodeByteInWav(sound);
     let message = '';
-    for(let i = 0, len = binary.length; i < len; i+=8){
+    for(let i = 0, len = binary.length; i < len; i+=8){//On récupère par 8 les bit de poid faible.
         let bin = binary.slice(i, i+8);
         let int = parseInt(bin, 2);
         let char = String.fromCharCode(int);
-        if(char == splitChar){
+        if(char == splitChar){//si le bit correspond a ; alors on arrête. C'est notre 
             break;
         }else{
-            message += String.fromCharCode(int);
+            message += String.fromCharCode(int);//sinon on ajoute la lettre
         }
     }
     res.send({message: message})
@@ -76,12 +77,12 @@ app.post('/hideImage' , function (req, res){
 
     imageBinary += splitFileName;
     
-    for(let i = 0; i < image.name.length; i++){
+    for(let i = 0; i < image.name.length; i++){//On convertit le nom de l'image en binaire pour le garder pour la restitution du fichier
         let rawBinary = image.name[i].charCodeAt(0).toString(2);
         imageBinary += rawBinary.padStart(8, '0');
     }
 
-    imageBinary += splitBin;
+    imageBinary += splitBin;//on ajoute les delimiteurs
 
 
     if(imageBinary.len > sound.data - 45){
