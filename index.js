@@ -98,9 +98,9 @@ app.post('/revealImage', function (req, res){
     }
 
     /* On check si les delimiter d'image existe, s'il ne sont pas là c'est que l'image n'est pas passer par notre algo
-        Notre algo a la particularité de savoir pù récupérer et de sauvegarder le nom de l'image originel. */
+        Notre algo a la particularité de savoir où récupérer et de sauvegarder le nom de l'image originel. */
     let sound = req.files.wav;
-    let binary = decodeByteInWav(sound);
+    let binary = decodeByteInWav(sound);//Opération longue qui recupère tous les bits de poid faible de la data.
     let sliceIndex = binary.indexOf(splitFileName);//cette opération est un peu longue, elle parcours toute la data sous forme de chaine de charactère pour trouver le delimiter
     if(sliceIndex == -1){//Si on ne trouve pas le delimiter
         res.send({error: 'No picture found in this music'});
