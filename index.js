@@ -152,8 +152,8 @@ function encodeByteInWav(sound, bin, res){
             let tab = strBin.split('');
             tab[tab.length-1] =  bin[i];// On remplace le bit de poid faible de la data de la musique bar notre mot binaire
             let newBin = tab.join('');
-            sound.data[header + i] = newBin.toString(10);
-        }
+            sound.data[header + i] = parseInt(newBin, 2);
+    }
 
         let temporalName = uuidv1();
         fs.writeFile('./musics/' + temporalName, sound.data, (err)=>{// On écrit le fichier, on l'envoit puis on le détruit
