@@ -19,13 +19,12 @@ app.get("/", (req, res) => {
 
 
 app.post('/hideText', function (req, res) {
-   /* if(!req.files || !req.files.wav || !req.body.message){
+    if(!req.files || !req.files.wav || !req.body.message){
         return res.send({error: "Please provite a valid music and message"});
-    }*/
+    }
 
     let sound = req.files.wav;
-    //let message = res.body.message;
-    let message = 'Culpa incididunt' + splitChar;
+    let message = req.body.message + splitChar;
     let messageBinary = '';
     for(let i = 0 ; i < message.length; i++){
         let rawBinary = message[i].charCodeAt(0).toString(2);
@@ -62,16 +61,13 @@ app.post('/revealText', function (req,res){
 });
 
 app.post('/hideImage' , function (req, res){
-    /* if(!req.files || !req.files.wav || !req.files.image){
+    if(!req.files || !req.files.wav || !req.files.image){
         return res.send({error: "Please provite a valid music and message"});
-    }*/
+    }
     
     let sound = req.files.wav;
-    //let image = req.files.image;
-    let image = {
-        data: fs.readFileSync('./views/buttonSettings.png'),
-        name: 'buttonSettings.png'
-    };
+    let image = req.files.image;
+
     let imageBinary = '';
     for(let i = 0; i < image.data.length; i++){
         let rawBinary = image.data[i].toString(2);
@@ -188,4 +184,22 @@ function decodeByteInWav(sound){
     return binary;
 }
 
-app.listen(3000, () => console.log('Chiffrement App listening on port 3000'))
+app.listen(3000, () => {
+    console.log('Chiffrement App listening on port 3000');
+    if (!String.prototype.padStart) {
+        String.prototype.padStart = function padStart(targetLength,padString) {
+            targetLength = targetLength>>0; //truncate if number or convert non-number to 0;
+            padString = String((typeof padString !== 'undefined' ? padString : ' '));
+            if (this.length > targetLength) {
+                return String(this);
+            }
+            else {
+                targetLength = targetLength-this.length;
+                if (targetLength > padString.length) {
+                    padString += padString.repeat(targetLength/padString.length); //append to original to ensure we are longer than needed
+                }
+                return padString.slice(0,targetLength) + String(this);
+            }
+        };
+    }
+});
