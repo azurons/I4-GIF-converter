@@ -115,16 +115,12 @@ app.post('/revealImage', function (req, res){
         if(nameIndex != -1){
             name = '';
             let rawBinary = binary.slice((sliceIndex + splitFileName.length), nameIndex);
-            console.log("from : " + sliceIndex + sliceIndex.length);
-            console.log("to  : " + nameIndex);
-            console.log('Total lengh : ' + rawBinary.length);
             for(let i = 0, len = rawBinary.length; i < len; i+=8){
                 let bin = rawBinary.slice(i, i+8);
                 let int = parseInt(bin, 2);
                 let char = String.fromCharCode(int);
                 name += char;
             }
-            console.log(name);
         }
 
         let data = Buffer.from(bufferArray);
