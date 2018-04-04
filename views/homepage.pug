@@ -4,12 +4,25 @@ html
         meta(name="viewport" content="width=device-width, initial-scale=1")
         meta(charset="utf-8")
         link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous")
+        style
+            include style.css
         script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")        
+        script(src="https://unpkg.com/axios/dist/axios.min.js")        
         script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous")
     body
         section(class="section")
             div(class="container")
-                h1(class="title mb-3") Encode and decrypt your message in .wav file 
+                div#alert-message
+                    div#inner-message
+                        div(id="error" class="alert alert-danger alert-dismissible fade show" role="alert")
+                            div#alert-message-error Une erreur est survenue
+                            button(type="button" class="close" data-dismiss="alert" aria-label="Close")
+                                span(aria-hidden="true")
+                        //- div(id="success" class="alert alert-success alert-dismissible fade" role="alert")
+                        //-     div#alert-message-success
+                        //-     button(type="button" class="close" data-dismiss="alert" aria-label="Close")
+                        //-         span(aria-hidden="true")
+                h1(class="title mb-3 mt-5") Encode and decrypt your message in .wav file 
                 nav
                     div(class="nav nav-tabs" id="nav-tab" role="tablist")
                         a(class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true") Text
@@ -18,7 +31,7 @@ html
                     div(class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab")
                         div.mt-3
                             h3 Encode your message in a .wav file 
-                            form(action='/hideText', method='POST', encType="multipart/form-data")
+                            form(id="hideText", action='/hideText', method='POST', encType="multipart/form-data")
                                 div(class="form-group")
                                     label(for="message") Message
                                     input(required class="form-control" type="text" id="message" name="message" placeholder="Your secret message here !")
@@ -56,3 +69,36 @@ html
                                     br
                                     input(required type='file' name='wav')
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
+        script.
+            $("#hideText").submit(function(event){
+                var formData = new FormData();
+                var message = event.target[0];
+                var file = event.target[1].files[0];                
+
+                formData.append('message', message);
+                formData.append('wav', file);
+
+                axios.post('/hideText', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "blob"
+                }).then(function(response){
+                    console.log(response);
+                    download(response.data);
+                }).catch(function(error){
+                    $('.alert').alert();
+                    console.log(error);                    
+                })
+
+                event.preventDefault();
+            });
+
+            function download(data){
+                const url = window.URL.createObjectURL(new Blob([data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'confidential.wav');
+                document.body.appendChild(link);
+                link.click();
+            }

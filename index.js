@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
 
 //Fonction pour cacher le text dans l'image
 app.post('/hideText', function (req, res) {
+    // console.log(req);
     if(!req.files || !req.files.wav || !req.body.message){//au cas où le formulaire soit incomplet
         return res.status(400).send({error: "Please provite a valid music and message"});
     }
