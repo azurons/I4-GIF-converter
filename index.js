@@ -8,6 +8,7 @@ const header = 44;
 const splitChar = ';';
 const splitFileName = '010100110101010001000001010100100101010000111011'; // Binaire du mode "START;"
 const splitBin = '01000101010011100100010000111011'; // Binaire du mot "END;"
+const opn = require('opn');
 
 app.use(fileUpload());
 app.use(cors());
@@ -186,6 +187,9 @@ function decodeByteInWav(sound){
 
 app.listen(3000, () => {
     console.log('Chiffrement App listening on port 3000');
+
+    //TODO : Supprimer cette ligne lors d'une mise en production
+    opn('http://localhost:3000/');
 
     //Fonction de secours au cas où votre version de NodeJs ne support pas l'ES7. La fonction pad start n'est donc pas disponible.
     if (!String.prototype.padStart) {
