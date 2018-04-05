@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 //Fonction pour cacher le text dans l'image
 app.post('/hideText', function (req, res) {
     if(!req.files || !req.files.wav || !req.body.message){//au cas où le formulaire soit incomplet
-        return res.send({error: "Please provite a valid music and message"});
+        return res.status(400).send({error: "Please provite a valid music and message"});
     }
 
     let sound = req.files.wav;
@@ -32,8 +32,8 @@ app.post('/hideText', function (req, res) {
         let rawBinary = message[i].charCodeAt(0).toString(2);
         messageBinary += rawBinary.padStart(8, '0');
     }
-    if(messageBinary.length > sound.data - 45){//On check si le message n'est pas trop long
-        return res.send({error: 'Text is too long or sound is too short'})
+    if(messageBinary.length > sound.data.length - 45){//On check si le message n'est pas trop long
+        return res.status(400).send({error: 'Text is too long or sound is too short'})
     }else{
         encodeByteInWav(sound, messageBinary, res);
     }   
@@ -43,7 +43,7 @@ app.post('/hideText', function (req, res) {
 
 app.post('/revealText', function (req,res){
     if(!req.files || !req.files.wav){
-        return res.send({error: "Please provite a valid music and message"});
+        return res.status(400).send({error: "Please provite a valid music and message"});
     }
 
     let sound = req.files.wav;
@@ -59,12 +59,12 @@ app.post('/revealText', function (req,res){
             message += String.fromCharCode(int);//sinon on ajoute la lettre
         }
     }
-    res.send({message: message})
+    return res.send({message: message})
 });
 
 app.post('/hideImage' , function (req, res){
     if(!req.files || !req.files.wav || !req.files.image){
-        return res.send({error: "Please provite a valid music and message"});
+        return res.status(400).send({error: "Please provite a valid music and message"});
     }
     
     let sound = req.files.wav;
@@ -86,8 +86,8 @@ app.post('/hideImage' , function (req, res){
     imageBinary += splitBin;//on ajoute les delimiteurs
 
 
-    if(imageBinary.len > sound.data - 45){
-        return res.send({error: 'Image is too big or sound is too short'});        
+    if(imageBinary.length > sound.data.length - 45){
+        return res.status(400).send({error: 'Image is too big or sound is too short'});        
     }else{
         encodeByteInWav(sound, imageBinary, res);
     }
@@ -95,7 +95,7 @@ app.post('/hideImage' , function (req, res){
 
 app.post('/revealImage', function (req, res){
     if(!req.files || !req.files.wav){
-        return res.send({error: 'Please provite a valid music and message'});
+        return res.status(400).send({error: 'Please provite a valid music and message'});
     }
 
     /* On check si les delimiter d'image existe, s'il ne sont pas là c'est que l'image n'est pas passer par notre algo
@@ -104,7 +104,7 @@ app.post('/revealImage', function (req, res){
     let binary = decodeByteInWav(sound);//Opération longue qui recupère tous les bits de poid faible de la data.
     let sliceIndex = binary.indexOf(splitFileName);//cette opération est un peu longue, elle parcours toute la data sous forme de chaine de charactère pour trouver le delimiter
     if(sliceIndex == -1){//Si on ne trouve pas le delimiter
-        res.send({error: 'No picture found in this music'});
+        res.status(400).send({error: 'No picture found in this music'});
     }else{
         let binImage = binary.slice(0, sliceIndex);
         let temporalName = uuidv1();
@@ -131,7 +131,7 @@ app.post('/revealImage', function (req, res){
 
         fs.writeFile('./musics/' +  temporalName,data, (err) => {//On écrit la musique temporairement, on l'envoit à l'utilisateur puis on l'efface du serveur
             if(err){
-                return res.send({error: 'Server encounted an error'});
+                return res.status(400).send({error: 'Server encounted an error'});
             }else{
                 return res.download(process.cwd() + '/musics/' + temporalName, name,function(err){
                     if(err){
@@ -159,7 +159,7 @@ function encodeByteInWav(sound, bin, res){
         let temporalName = uuidv1();
         fs.writeFile('./musics/' + temporalName, sound.data, (err)=>{// On écrit le fichier, on l'envoit puis on le détruit
             if(err){
-                return res.send({error: 'Server encounted an error'});
+                return res.status(400).send({error: 'Server encounted an error'});
             }else{
                 return res.download(process.cwd() + '/musics/' + temporalName, sound.name , function(err){
                     if(err){
