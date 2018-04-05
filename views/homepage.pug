@@ -34,7 +34,7 @@ html
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
                         div.mt-3
                             h3 Decode a message from a .wav file 
-                            form(action='/revealText', method='POST', encType="multipart/form-data")
+                            form(id="revealText" action='/revealText', method='POST', encType="multipart/form-data")
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
@@ -78,6 +78,28 @@ html
                     responseType: "blob"
                 }).then(function(response){
                     download(response.data);
+                    displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
+                }).catch(function(error){
+                    displayMessage(event.target.id, "error", error.response.statusText);
+                })
+
+                event.preventDefault();
+            });
+
+            /* REVEAL TEXT */
+            $("#revealText").submit(function(event){
+                var formData = new FormData();
+                console.log(event);
+                var file = event.target[0].files[0];                
+                formData.append('wav', file);
+
+                axios.post('/revealText', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "json"
+                }).then(function(response){
+                    console.log(response);
                     displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
                 }).catch(function(error){
                     displayMessage(event.target.id, "error", error.response.statusText);
