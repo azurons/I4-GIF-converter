@@ -39,6 +39,8 @@ html
                                     label(for="wav") Your .wav file
                                     br
                                     input(required type='file' name='wav')
+                                div(id="revealText-error" class="alert alert-danger" role="alert" style="display:none")
+                                div(id="revealText-success" class="alert alert-success" role="alert" style="display:none")
                                 button(type='submit' class="btn btn-primary mb-2") Confirm                            
                     div(class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab")
                         div.mt-3
@@ -65,7 +67,8 @@ html
             /* HIDE TEXT */
             $("#hideText").submit(function(event){
                 var formData = new FormData();
-                var message = event.target[0];
+                var message = event.target[0].value;
+                console.log(message);
                 var file = event.target[1].files[0];                
 
                 formData.append('message', message);
@@ -90,7 +93,8 @@ html
             $("#revealText").submit(function(event){
                 var formData = new FormData();
                 console.log(event);
-                var file = event.target[0].files[0];                
+                var file = event.target[0].files[0];    
+                console.log(file);            
                 formData.append('wav', file);
 
                 axios.post('/revealText', formData, {
@@ -100,7 +104,7 @@ html
                     responseType: "json"
                 }).then(function(response){
                     console.log(response);
-                    displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
+                    displayMessage(event.target.id, "success", "Message codé : " + response.data.message);                    
                 }).catch(function(error){
                     displayMessage(event.target.id, "error", error.response.statusText);
                 })
