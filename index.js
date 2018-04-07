@@ -10,16 +10,26 @@ const splitFileName = '010100110101010001000001010100100101010000111011'; // Bin
 const splitBin = '01000101010011100100010000111011'; // Binaire du mot "END;"
 const opn = require('opn');
 
+// Key & Cert pour ls SSL
+const options = {
+    key:fs.readFileSync('./ssl/server-key.pem'),
+    cert:fs.readFileSync('./ssl/server-cert.pem')
+};
+
+// Pour écouter le protocole HTTPS
+const https = require('https').createServer(options,app);
+const http = require('http').createServer(app);
+
 app.use(fileUpload());
 app.use(cors());
 app.set("view engine", "pug");
 
 //Lorsqu'on tape sur localhost:3000/ on renvoit la page d'accueil
 app.get("/", (req, res) => {
-    res.render("homepage");
+    (req.protocol == 'http') ? res.redirect('https://localhost:3000/') : res.render("homepage");
 });
 
-//Fonction pour cacher le text dans l'image
+//Fonction pour cacher le texte dans le son
 app.post('/hideText', function (req, res) {
     if(!req.files || !req.files.wav || !req.body.message){//au cas où le formulaire soit incomplet
         return res.status(400).send({error: "Please provite a valid music and message"});
@@ -40,7 +50,7 @@ app.post('/hideText', function (req, res) {
 
 });
 
-
+//Fonction pour révéler le texte dans le son
 app.post('/revealText', function (req,res){
     if(!req.files || !req.files.wav){
         return res.status(400).send({error: "Please provite a valid music and message"});
@@ -63,6 +73,7 @@ app.post('/revealText', function (req,res){
     return res.send({message: message})
 });
 
+//Fonction pour cacher l'image dans le son
 app.post('/hideImage' , function (req, res){
     if(!req.files || !req.files.wav || !req.files.image){
         return res.status(400).send({error: "Please provite a valid music and message"});
@@ -94,6 +105,7 @@ app.post('/hideImage' , function (req, res){
     }
 });
 
+//Fonction pour révéler l'image dans le son
 app.post('/revealImage', function (req, res){
     if(!req.files || !req.files.wav){
         return res.status(400).send({error: 'Please provite a valid music and message'});
@@ -148,6 +160,7 @@ app.post('/revealImage', function (req, res){
     }
 });
 
+// Fonction d'encode en .wav
 function encodeByteInWav(sound, bin, res){
     for(let i = 0, len = bin.length; i < len; i++){
             let strBin = sound.data[header + i].toString(2);
@@ -186,11 +199,12 @@ function decodeByteInWav(sound){
     return binary;
 }
 
-app.listen(3000, () => {
-    console.log('Chiffrement App listening on port 3000');
+// Lancement de serveur et de l'écoute port 3000 et protocol https
+https.listen(3000, () => {
+    console.log('Chiffrement App listening https on port 3000');
 
     //TODO : Supprimer cette ligne lors d'une mise en production
-    opn('http://localhost:3000/');
+    opn('https://localhost:3000/');
 
     //Fonction de secours au cas où votre version de NodeJs ne support pas l'ES7. La fonction pad start n'est donc pas disponible.
     if (!String.prototype.padStart) {
