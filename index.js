@@ -59,6 +59,7 @@ app.post('/revealText', function (req,res){
             message += String.fromCharCode(int);//sinon on ajoute la lettre
         }
     }
+    
     return res.send({message: message})
 });
 

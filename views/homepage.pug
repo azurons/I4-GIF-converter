@@ -4,12 +4,15 @@ html
         meta(name="viewport" content="width=device-width, initial-scale=1")
         meta(charset="utf-8")
         link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous")
+        style
+            include style.css
         script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")        
+        script(src="https://unpkg.com/axios/dist/axios.min.js")        
         script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous")
     body
         section(class="section")
             div(class="container")
-                h1(class="title mb-3") Encode and decrypt your message in .wav file 
+                h1(class="title mb-3 mt-5") Encode and decrypt your message in .wav file 
                 nav
                     div(class="nav nav-tabs" id="nav-tab" role="tablist")
                         a(class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true") Text
@@ -18,7 +21,7 @@ html
                     div(class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab")
                         div.mt-3
                             h3 Encode your message in a .wav file 
-                            form(action='/hideText', method='POST', encType="multipart/form-data")
+                            form(id="hideText", action='/hideText', method='POST', encType="multipart/form-data")
                                 div(class="form-group")
                                     label(for="message") Message
                                     input(required class="form-control" type="text" id="message" name="message" placeholder="Your secret message here !")
@@ -26,19 +29,23 @@ html
                                     label(for="wav") Your .wav file 
                                     br
                                     input(required type='file' id="wav" name='wav')
+                                div(id="hideText-error" class="alert alert-danger" role="alert" style="display:none")
+                                div(id="hideText-success" class="alert alert-success" role="alert" style="display:none")
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
                         div.mt-3
                             h3 Decode a message from a .wav file 
-                            form(action='/revealText', method='POST', encType="multipart/form-data")
+                            form(id="revealText" action='/revealText', method='POST', encType="multipart/form-data")
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
                                     input(required type='file' name='wav')
+                                div(id="revealText-error" class="alert alert-danger" role="alert" style="display:none")
+                                div(id="revealText-success" class="alert alert-success" role="alert" style="display:none")
                                 button(type='submit' class="btn btn-primary mb-2") Confirm                            
                     div(class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab")
                         div.mt-3
                             h3 Encode your image in a .wav file 
-                            form(action='/hideImage', method='POST', encType="multipart/form-data")
+                            form(id="hideImage" action='/hideImage', method='POST', encType="multipart/form-data")
                                 div(class="form-group") 
                                     label(for="wav") Your image file
                                     br
@@ -46,13 +53,136 @@ html
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
-                                    input(required type='file' name='wav')    
+                                    input(required type='file' name='wav') 
+                                div(id="hideImage-error" class="alert alert-danger" role="alert" style="display:none")
+                                div(id="hideImage-success" class="alert alert-success" role="alert" style="display:none")
                                 button(type='submit' class="btn btn-primary mb-2") Confirm     
                         div.mt-3                        
                             h3 Decode a message from a .wav file
-                            form(action='/revealImage', method='POST', encType="multipart/form-data")
+                            form(id="revealImage" action='/revealImage', method='POST', encType="multipart/form-data")
                                 div(class="form-group") 
                                     label(for="wav") Your .wav file
                                     br
                                     input(required type='file' name='wav')
+                                div(id="revealImage-error" class="alert alert-danger" role="alert" style="display:none")
+                                div(id="revealImage-success" class="alert alert-success" role="alert" style="display:none")
                                 button(type='submit' class="btn btn-primary mb-2") Confirm
+        script.
+            /* HIDE TEXT */
+            $("#hideText").submit(function(event){
+                hideMessage(event.target.id);
+
+                var formData = new FormData();
+                var message = event.target[0].value;
+                var file = event.target[1].files[0];                
+
+                formData.append('message', message);
+                formData.append('wav', file);
+
+                axios.post('/hideText', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "blob"
+                }).then(function(response){
+                    download(response.data, 'wav');
+                    displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
+                }).catch(function(error){
+                    displayMessage(event.target.id, "error", error.response.statusText);
+                })
+
+                event.preventDefault();
+            });
+
+            /* REVEAL TEXT */
+            $("#revealText").submit(function(event){
+                hideMessage(event.target.id);
+
+                var formData = new FormData();
+                var file = event.target[0].files[0];    
+                formData.append('wav', file);
+
+                axios.post('/revealText', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "json"
+                }).then(function(response){
+                    displayMessage(event.target.id, "success", "Message codé : " + response.data.message);                    
+                }).catch(function(error){
+                    displayMessage(event.target.id, "error", error.response.statusText);
+                })
+
+                event.preventDefault();
+            });
+
+            /* HIDE IMAGE */
+            $("#hideImage").submit(function(event){
+                hideMessage(event.target.id);
+
+                var formData = new FormData();
+                var image = event.target[0].files[0];
+                var file = event.target[1].files[0];                
+
+                formData.append('image', image);
+                formData.append('wav', file);
+
+                axios.post('/hideImage', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "blob"
+                }).then(function(response){
+                    download(response.data, 'wav');
+                    displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
+                }).catch(function(error){
+                    displayMessage(event.target.id, "error", error.response.statusText);
+                })
+
+                event.preventDefault();
+            });
+
+            /* REVEAL IMAGE */
+            $("#revealImage").submit(function(event){
+                hideMessage(event.target.id);
+
+                var formData = new FormData();
+                var file = event.target[0].files[0];    
+                formData.append('wav', file);
+
+                axios.post('/revealImage', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    responseType: "blob"
+                }).then(function(response){
+                    download(response.data, 'jpg');
+                    displayMessage(event.target.id, "success", "Bien joué ! La CIA ne pourra pas vous attraper !");                    
+                }).catch(function(error){
+                    displayMessage(event.target.id, "error", error.response.statusText);
+                })
+
+                event.preventDefault();
+            });
+
+
+            function download(data, ext){
+                const url = window.URL.createObjectURL(new Blob([data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', 'confidential.'+ ext);
+                document.body.appendChild(link);
+                link.click();
+            }
+
+            function hideMessage(id){
+                var alertIdSuccess = "#" + id + "-success";
+                var alertIdError = "#" + id + "-error";
+                $(alertIdSuccess).css("display", "none");
+                $(alertIdError).css("display", "none");
+            }
+
+            function displayMessage(id, type, message){
+                var alertId = "#" + id + "-" + type;
+                $(alertId).text(message).css("display", "block");
+            }
