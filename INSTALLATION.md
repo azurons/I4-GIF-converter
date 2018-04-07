@@ -1,4 +1,4 @@
-## Effectuer les commandes suivantes :
+## Effectuer les commandes suivantes dans le répertoire où se trouve le package.json:
 `npm install`
 `npm start`
 
